@@ -80,12 +80,55 @@ engine = init_engine()
 
 user_input = st.text_area("输入你此刻的心境：", height=100)
 
+# --- 在代码顶部定义一个精美的 CSS 样式 ---
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f5f7f9;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 20px;
+        background-color: #6c5ce7;
+        color: white;
+        height: 3em;
+    }
+    .result-card {
+        padding: 2rem;
+        border-radius: 15px;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #6c5ce7;
+        margin-top: 2rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 界面展示逻辑 ---
 if st.button("开始占卜"):
     if user_input.strip():
-        results = engine.query(query_texts=[user_input], n_results=1)
-        if results and results['metadatas'] and len(results['metadatas'][0]) > 0:
-            res = results['metadatas'][0][0]
-            st.balloons()
-            st.subheader(f"结果：【{res['name']}】 ({res['gender']})")
+        with st.spinner("🔮 正在调配属于你的气味坐标..."):
+            results = engine.query(query_texts=[user_input], n_results=1)
+            
+            if results and results['metadatas'] and len(results['metadatas'][0]) > 0:
+                res = results['metadatas'][0][0]
+                name = res['name']
+                gender = res['gender']
+                
+                # 使用自定义 HTML 卡片展示结果
+                st.balloons()
+                st.markdown(f"""
+                    <div class="result-card">
+                        <h3 style='color: #2d3436; margin-bottom: 0;'>占卜结果</h3>
+                        <p style='color: #636e72; font-size: 0.9em;'>根据你的心境，最契合的气味是：</p>
+                        <h1 style='color: #6c5ce7; margin-top: 10px;'>【{name}】</h1>
+                        <hr>
+                        <p style='margin-bottom: 5px;'><b>系列分类：</b> {gender}</p>
+                        <p style='font-style: italic; color: #a29bfe;'>“让这款香氛包裹你的灵魂，正如你刚才描述的那样。”</p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # 增加一个重新占卜的提示
+                st.caption("小提示：你可以尝试更详细地描述画面感，结果会更精准。")
     else:
-        st.warning("请输入文字。")
+        st.warning("请先告诉占卜师你此刻的感受。")
